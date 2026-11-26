@@ -504,6 +504,7 @@
 
     .optional { color: var(--muted); }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    #form-storage-note { color: var(--muted); font-size: 13px; }
     #form-error { margin-top: 12px; color: var(--danger); font-size: 14px; }
     .form-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 17px; }
 
@@ -664,6 +665,7 @@
         Descrição
         <textarea name="desc" maxlength="500" placeholder="Uma breve descrição do jogo"></textarea>
       </label>
+      <p id="form-storage-note" hidden></p>
       <p id="form-error" role="alert" hidden></p>
       <div class="form-actions">
         <button class="button secondary" type="button" data-close>Cancelar</button>
@@ -744,14 +746,23 @@
     }
 
     function fromServer(record) {
+      const storageId = storageKey + ':server:' + JSON.stringify([record.id, record.nome, record.criador]);
+      let changes = {};
+      try {
+        changes = JSON.parse(localStorage.getItem(storageId)) ?? {};
+      } catch {
+        // The server catalog remains available if browser storage is unavailable.
+      }
       return {
-        id: String(record.id),
         name: record.nome ?? '',
         studio: record.criador ?? '',
         genre: record.genero ?? '',
         price: record.preco ?? null,
         desc: record.descricao ?? '',
-        image: record.capa ?? ''
+        image: record.capa ?? '',
+        ...changes,
+        id: String(record.id),
+        storageId
       };
     }
 
@@ -796,24 +807,35 @@
 
     async function saveGame(data, current) {
       let entry;
+      let message = current ? 'Jogo atualizado.' : 'Jogo cadastrado.';
       if (localMode) {
         const id = current?.id ?? (globalThis.crypto?.randomUUID?.() ?? String(Date.now()));
         entry = { ...data, id };
+      } else if (current) {
+        localStorage.setItem(current.storageId, JSON.stringify(data));
+        entry = { ...current, ...data };
+        message = 'Edição salva neste navegador.';
       } else {
         const body = {
           nome: data.name, criador: data.studio, genero: data.genre,
-          preco: data.price, capa: data.image, descricao: data.desc
+          ano: 0, disponivel: true, capa: data.image, descricao: data.desc
         };
-        if (!current) body.disponivel = true;
-        entry = fromServer(await request(current ? '/' + encodeURIComponent(current.id) : '', {
-          method: current ? 'PUT' : 'POST',
+        entry = fromServer(await request('', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
         }));
+        try {
+          localStorage.setItem(entry.storageId, JSON.stringify({ price: data.price }));
+          entry.price = data.price;
+        } catch {
+          message = 'Jogo cadastrado no banco. O navegador não conseguiu salvar o preço.';
+        }
       }
       const nextGames = current ? games.map(game => game.id === current.id ? entry : game) : [entry, ...games];
       if (localMode) saveLocally(nextGames);
       else games = nextGames;
+      return message;
     }
 
     async function deleteGame(game) {
@@ -846,6 +868,7 @@
 
       const remove = card.querySelector('[data-delete]');
       remove.dataset.delete = game.id;
+      remove.hidden = !localMode;
       remove.setAttribute('aria-label', 'Excluir ' + game.name);
       return card;
     }
@@ -909,6 +932,11 @@
         }
       }
 
+      const storageNote = $('form-storage-note');
+      storageNote.hidden = localMode;
+      storageNote.textContent = game
+        ? 'As edições ficam salvas neste navegador.'
+        : 'O jogo vai para o banco. O preço fica salvo neste navegador.';
       modal.showModal();
     }
 
@@ -938,10 +966,10 @@
       saving = true;
       submitButton.disabled = true;
       try {
-        await saveGame(data, editing);
+        const message = await saveGame(data, editing);
         modal.close();
         render();
-        notify(editing ? 'Jogo atualizado.' : 'Jogo cadastrado.');
+        notify(message);
       } catch {
         showFormError('Não foi possível salvar o jogo. Tente novamente.');
       } finally {

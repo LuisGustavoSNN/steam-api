@@ -8,108 +8,58 @@
 
 ## Sobre o projeto
 
-Steam Library é um projeto acadêmico de gerenciamento de uma biblioteca digital de jogos, inspirado na interface da Steam.
+Steam Library é um projeto acadêmico de biblioteca digital de jogos inspirado na Steam. A página exibe a foto, o nome **pythoN** e o **nível 12** sobre o fundo animado do perfil. A animação começa automaticamente, sem som.
 
-A aplicação possui uma API REST desenvolvida com Java e Spring Boot para cadastro e consulta de jogos, utilizando Spring Data JPA e MySQL para persistência dos dados.
+A interface responsiva usa HTML, CSS e JavaScript. A API REST usa Java 25, Spring Boot, Spring Web MVC, Spring Data JPA e Hibernate para cadastrar e consultar jogos no MySQL.
 
-O projeto também conta com uma interface web responsiva desenvolvida com HTML, CSS e JavaScript, que permite gerenciar uma coleção de jogos diretamente no navegador.
+## Como a biblioteca funciona
 
-## Funcionalidades
+| Modo de acesso | Funcionalidades | Armazenamento |
+| --- | --- | --- |
+| Abrir `src/main/resources/static/index.html` diretamente no navegador | Cadastrar, editar e excluir jogos da coleção | `localStorage` do navegador |
+| Abrir `http://localhost:8080/` com o Spring Boot em execução | Consultar e cadastrar jogos pela API. Editar jogos e atribuir preços neste navegador | MySQL para cadastro e consulta; navegador para edições e preços |
 
-### Back-end
+Nos dois modos, a biblioteca oferece pesquisa por nome ou desenvolvedora, filtro por gênero, ordenação, capas e descrições. No modo local, ela também calcula a quantidade de jogos gratuitos e o valor da coleção a partir dos preços cadastrados.
 
-- Cadastro de jogos.
-- Listagem de jogos cadastrados.
-- Persistência de dados no MySQL.
-- Geração automática de identificadores.
-- Comunicação por HTTP e JSON.
+A API atual oferece `GET` e `POST`. Ao usar a interface pelo Spring, as edições e os preços ficam no navegador e a exclusão está disponível no modo local. Os jogos da API sem preço informado aparecem com **Preço não cadastrado**. A coleção local e o catálogo MySQL são independentes.
 
-### Front-end
-
-- Cadastro, edição e exclusão de jogos.
-- Pesquisa por nome ou desenvolvedora.
-- Filtro por gênero.
-- Ordenação por nome, preço ou ordem de cadastro.
-- Exibição de capas e descrições.
-- Indicadores de quantidade de jogos, jogos gratuitos e valor total do catálogo.
-- Armazenamento local com `localStorage`.
-- Interface responsiva inspirada na Steam.
-
-**Nota:** atualmente, o front-end funciona de forma independente da API REST. Os dados cadastrados pela interface são armazenados no navegador, e os dados enviados à API são persistidos no banco de dados.
-
-## Tecnologias utilizadas
-
-| Tecnologia | Finalidade |
-| --- | --- |
-| Java 25 | Desenvolvimento do back-end |
-| Spring Boot 4.2.0 | Configuração e execução da aplicação |
-| Spring Web MVC | Implementação da API REST |
-| Spring Data JPA | Acesso e persistência de dados |
-| Hibernate | Mapeamento objeto-relacional |
-| MySQL | Banco de dados da aplicação |
-| H2 | Banco de dados em memória nos testes |
-| Maven | Gerenciamento de dependências e build |
-| JUnit 5 | Testes automatizados |
-| HTML5, CSS3 e JavaScript | Desenvolvimento da interface web |
-
-## Estrutura do projeto
+## Estrutura
 
 ```text
 steam-api/
-└── Steam/
-    ├── src/
-    │   ├── main/
-    │   │   ├── java/com/dest1/steam/
-    │   │   │   ├── controllers/
-    │   │   │   │   └── JogoController.java
-    │   │   │   ├── entities/
-    │   │   │   │   └── Jogo.java
-    │   │   │   ├── repositories/
-    │   │   │   │   └── JogoRepository.java
-    │   │   │   └── SteamApplication.java
-    │   │   └── resources/
-    │   │       ├── static/
-    │   │       │   └── index.html
-    │   │       ├── application.properties
-    │   │       └── application-mysql.properties
-    │   └── test/java/com/dest1/steam/
-    │       ├── JogoControllerIntegrationTests.java
-    │       └── SteamApplicationTests.java
-    ├── pom.xml
-    ├── mvnw
-    └── mvnw.cmd
+├── src/
+│   ├── main/
+│   │   ├── java/com/dest1/steam/
+│   │   │   ├── controllers/JogoController.java
+│   │   │   ├── entities/Jogo.java
+│   │   │   ├── repositories/JogoRepository.java
+│   │   │   └── SteamApplication.java
+│   │   └── resources/
+│   │       ├── static/
+│   │       │   ├── index.html
+│   │       │   ├── biblioteca.html
+│   │       │   ├── avatar-python.png
+│   │       │   └── perfil-fundo.{jpg,mp4,webm}
+│   │       ├── application.properties
+│   │       └── application-mysql.properties
+│   └── test/java/com/dest1/steam/
+│       ├── JogoControllerIntegrationTests.java
+│       └── SteamApplicationTests.java
+├── pom.xml
+├── mvnw
+└── mvnw.cmd
 ```
 
-## Arquitetura
-
-- **Controller:** recebe as requisições HTTP e retorna os dados da API.
-- **Entity:** representa o modelo de jogo, mapeado para a tabela `tb_jogo`.
-- **Repository:** utiliza `JpaRepository` para operações de persistência.
-
-```mermaid
-flowchart LR
-    A[Cliente HTTP] --> B[JogoController]
-    B --> C[JogoRepository]
-    C --> D[(MySQL)]
-    E[Interface web] --> F[localStorage]
-```
+O `JogoController` recebe requisições HTTP e usa o `JogoRepository` para persistir ou consultar entidades `Jogo`, mapeadas para a tabela `tb_jogo`.
 
 ## Endpoints da API
 
-URL base: `http://localhost:8080/api/jogos`
-
-| Método | Endpoint | Descrição | Status de sucesso |
+| Método | Endpoint | Operação | Resposta de sucesso |
 | --- | --- | --- | --- |
-| GET | `/api/jogos` | Lista todos os jogos | 200 OK |
-| POST | `/api/jogos` | Cadastra um jogo | 200 OK |
+| `GET` | `/api/jogos` | Lista os jogos cadastrados | `200 OK` com uma lista JSON |
+| `POST` | `/api/jogos` | Cadastra um jogo | `200 OK` com o jogo salvo e seu `id` |
 
-### Cadastrar um jogo
-
-**POST** `/api/jogos`
-
-Content-Type: `application/json`
-
-Exemplo de corpo da requisição:
+Exemplo de corpo JSON para `POST /api/jogos`, com `Content-Type: application/json`.
 
 ```json
 {
@@ -125,99 +75,54 @@ Exemplo de corpo da requisição:
 }
 ```
 
-A API retorna o objeto persistido, incluindo o `id` gerado.
-
-### Listar jogos
-
-**GET** `/api/jogos`
+Para listar os jogos:
 
 ```bash
 curl http://localhost:8080/api/jogos
 ```
 
-Exemplo de resposta:
+## Como executar
 
-```json
-[
-  {
-    "id": 1,
-    "nome": "Portal 2",
-    "genero": "Puzzle",
-    "criador": "Valve",
-    "ano": 2011,
-    "modo": "Individual e cooperativo",
-    "classificacao": "10 anos",
-    "descricao": "Jogo de quebra-cabeças com portais.",
-    "capa": "",
-    "disponivel": true
-  }
-]
-```
-
-## Como executar o projeto
-
-### Pré-requisitos
-
-- JDK 25.
-- MySQL instalado e em execução.
-- Git.
-- Acesso às dependências Maven (o projeto inclui Maven Wrapper).
-
-### 1. Clone o repositório
+Para a API, use JDK 25, MySQL em execução e acesso às dependências do Maven. O projeto inclui o Maven Wrapper.
 
 ```bash
 git clone https://github.com/LuisGustavoSNN/steam-api.git
-cd steam-api/Steam
+cd steam-api
 ```
 
-### 2. Configure o banco de dados
+O banco padrão é `steam`. Configure as variáveis de ambiente conforme sua instalação do MySQL.
 
-O projeto utiliza, por padrão, um banco MySQL chamado `roblox`, conforme a configuração existente no código.
+| Variável | Uso |
+| --- | --- |
+| `DB_URL` | URL JDBC. O padrão usa `jdbc:mysql://localhost:3306/steam?createDatabaseIfNotExist=true` |
+| `DB_USER` | Usuário MySQL. O padrão é `root` |
+| `DB_PASSWORD` | Senha do usuário MySQL. Defina o valor da sua instalação |
 
-Para utilizar o perfil `mysql`, configure as seguintes variáveis de ambiente de acordo com suas credenciais:
+O Hibernate usa `ddl-auto=update`. A senha padrão é vazia. Se o seu MySQL exige senha, defina `DB_PASSWORD` antes de iniciar a aplicação. Mantenha credenciais reais nas variáveis de ambiente.
 
-| Variável | Descrição | Valor padrão no perfil mysql |
-| --- | --- | --- |
-| `DB_URL` | URL JDBC | `jdbc:mysql://localhost:3306/roblox?createDatabaseIfNotExist=true` |
-| `DB_USER` | Usuário do banco | `root` |
-| `DB_PASSWORD` | Senha do banco | Vazia |
-
-O Hibernate está configurado com `ddl-auto=update`, permitindo a atualização da estrutura das tabelas.
-
-Não publique credenciais reais no repositório.
-
-### 3. Execute a aplicação
-
-Linux ou macOS:
+No Linux ou macOS:
 
 ```bash
-./mvnw spring-boot:run -Dspring-boot.run.profiles=mysql
+./mvnw spring-boot:run
 ```
 
-Windows (PowerShell):
+No Windows, pelo PowerShell:
 
 ```powershell
-.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=mysql"
+.\mvnw.cmd spring-boot:run
 ```
 
-### 4. Acesse a aplicação
+Abra a interface em `http://localhost:8080/` ou consulte a API em `http://localhost:8080/api/jogos`.
 
-- Interface web: http://localhost:8080
-- API REST: http://localhost:8080/api/jogos
+## Testes
 
-## Testes automatizados
-
-O projeto possui testes de inicialização do contexto Spring e testes de integração que verificam o cadastro e a listagem de jogos por requisições HTTP.
-
-Os testes utilizam H2 em memória.
-
-Executar:
+Os testes verificam a inicialização do Spring e o cadastro e a listagem via HTTP. Eles usam H2 em memória.
 
 ```bash
 ./mvnw test
 ```
 
-Windows:
+No Windows:
 
 ```powershell
 .\mvnw.cmd test
@@ -225,17 +130,11 @@ Windows:
 
 ## Melhorias futuras
 
-- Integrar a interface web com a API REST.
-- Implementar endpoints específicos para atualização e exclusão.
-- Implementar consulta de jogos por ID.
-- Adicionar validação de dados e tratamento de exceções.
+- Completar a integração de cadastro, edição e exclusão entre a interface e a API.
+- Adicionar consulta por ID, validação de dados e tratamento de erros.
+- Unificar os campos da interface e do modelo Java, incluindo o preço.
 - Padronizar o tipo do identificador entre a entidade e o repositório.
-- Unificar os campos utilizados no front-end e no back-end.
 
 ## Autor
 
-Desenvolvido por **Luis Gustavo**.
-
-[GitHub](https://github.com/LuisGustavoSNN)
-
----
+Desenvolvido por **Luis Gustavo**. [GitHub](https://github.com/LuisGustavoSNN)
