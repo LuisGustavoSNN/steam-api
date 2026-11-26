@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#161b24">
+  <title>Minha biblioteca · Steam Library</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #161b24;
+      --surface: #212a38;
+      --input: #19222e;
+      --line: #344153;
+      --field-line: #4c5b71;
+      --text: #f0f3fa;
+      --muted: #b2c0d6;
+      --accent: #ffafa6;
+      --accent-hover: #ffd0c9;
+      --danger: #f1aaa3;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--background);
+      color: var(--text);
+      font: 15px/1.5 system-ui, sans-serif;
+    }
+
+    h1, h2, h3, p, dl, dd { margin: 0; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .6; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+    .shell {
+      width: min(1240px, calc(100% - 64px));
+      margin-inline: auto;
+    }
+
+    .site-header {
+      border-bottom: 1px solid var(--line);
+      background: #1b212c;
+    }
+
+    .header-inner {
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+    }
+
+    .profile {
+      position: absolute;
+      z-index: 1;
+      left: clamp(14px, 3vw, 33px);
+      bottom: clamp(24px, 3vw, 34px);
+      display: flex;
+      align-items: center;
+      gap: clamp(12px, 2vw, 23px);
+      max-width: calc(100% - 28px);
+      padding: 13px 19px 13px 13px;
+      border: 1px solid #ffd9d146;
+      border-radius: 8px;
+      background: #19151ae8;
+    }
+
+    .profile-avatar {
+      display: block;
+      width: clamp(58px, 10vw, 112px);
+      height: clamp(58px, 10vw, 112px);
+      object-fit: cover;
+      border: 1px solid #e2b6b2;
+      border-radius: 5px;
+    }
+
+    .profile-name {
+      display: block;
+      font-size: clamp(1.45rem, 3.5vw, 2.7rem);
+      font-weight: 750;
+      line-height: 1.08;
+      letter-spacing: -.035em;
+    }
+
+    .profile-level {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 7px;
+      color: #f4dbd7;
+      font-size: 14px;
+    }
+
+    .profile-level strong {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .profile-banner {
+      position: relative;
+      height: clamp(210px, 34vw, 400px);
+      isolation: isolate;
+      overflow: hidden;
+      margin-bottom: 29px;
+      border: 1px solid #573334;
+      border-radius: 8px;
+      background: #251b20 url("perfil-fundo.jpg") 74% 72% / cover no-repeat;
+    }
+
+    .profile-banner video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 74% 72%;
+    }
+
+    .profile-banner::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 80px;
+      background: linear-gradient(transparent, #1210168f);
+      pointer-events: none;
+    }
+
+    .wordmark {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      min-height: 62px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .015em;
+    }
+
+    .wordmark-mark {
+      width: 25px;
+      height: 25px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #637b9d;
+      border-radius: 5px;
+      background: #253650;
+    }
+
+    .wordmark-mark::before {
+      content: "";
+      width: 12px;
+      height: 11px;
+      border-inline: 2px solid var(--accent);
+      box-shadow: inset 2px 0 #253650, inset 4px 0 var(--accent);
+      transform: skew(-12deg);
+    }
+
+    main {
+      flex: 1;
+      padding-block: 24px 64px;
+    }
+
+    .page-heading, .section-heading, .modal-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 3rem);
+      line-height: 1.05;
+      font-weight: 680;
+      letter-spacing: -.065em;
+    }
+
+    h2 {
+      font-size: 23px;
+      line-height: 1.25;
+      font-weight: 650;
+      letter-spacing: -.035em;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 43px;
+      padding: 8px 14px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .primary { background: var(--accent); color: #2e181d; }
+    .primary:hover { background: var(--accent-hover); }
+    .secondary { background: transparent; color: var(--text); border-color: var(--field-line); }
+    .secondary:hover, .icon-button:hover { background: #303e54; }
+    .danger { background: transparent; color: var(--danger); }
+    .danger:hover { background: #372b28; }
+
+    .plus {
+      position: relative;
+      width: 14px;
+      height: 14px;
+    }
+
+    .plus::before, .plus::after {
+      content: "";
+      position: absolute;
+      top: 6px;
+      left: 1px;
+      width: 12px;
+      height: 2px;
+      border-radius: 1px;
+      background: currentColor;
+    }
+
+    .plus::after { transform: rotate(90deg); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 242px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+      margin-top: 26px;
+    }
+
+    .library-sidebar {
+      min-width: 0;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+    }
+
+    .library-sidebar h2 { font-size: 17px; letter-spacing: -.02em; }
+    #total, #count { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+    #count:not(:empty) { margin-bottom: 10px; }
+
+    .game-links {
+      display: grid;
+      gap: 2px;
+      max-height: 360px;
+      margin-top: 12px;
+      padding-top: 8px;
+      overflow-y: auto;
+      border-top: 1px solid var(--line);
+    }
+
+    .game-links a {
+      min-width: 0;
+      padding: 7px 8px;
+      color: var(--text);
+      text-decoration: none;
+      overflow-wrap: anywhere;
+      border-radius: 4px;
+    }
+
+    .game-links a:hover { background: #303e54; }
+    .game-links a:focus-visible { outline-offset: -2px; }
+    .game:target { border-color: var(--accent); }
+
+    .collection-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 13px;
+    }
+
+    .stats { display: flex; flex-wrap: wrap; gap: 5px 18px; }
+    .stats > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+    .stats dt { color: var(--muted); font-size: 13px; }
+    .stats dd { font-weight: 650; font-variant-numeric: tabular-nums; }
+    #sort { width: auto; max-width: 100%; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+      margin-top: 13px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      min-width: 0;
+      min-height: 43px;
+      padding: 9px 11px;
+      border: 1px solid var(--field-line);
+      border-radius: 5px;
+      background: var(--input);
+      color: var(--text);
+    }
+
+    input::placeholder, textarea::placeholder { color: #a8b7cf; }
+    select { padding-right: 12px; }
+    textarea { min-height: 88px; resize: vertical; }
+
+    .search-field { position: relative; }
+    .search-field input { padding-left: 37px; }
+
+    .search-field::before, .search-field::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      color: var(--muted);
+    }
+
+    .search-field::before {
+      left: 13px;
+      top: 13px;
+      width: 13px;
+      height: 13px;
+      border: 1.5px solid currentColor;
+      border-radius: 50%;
+    }
+
+    .search-field::after {
+      left: 23px;
+      top: 26px;
+      width: 6px;
+      height: 1.5px;
+      border-radius: 1px;
+      background: currentColor;
+      transform: rotate(45deg);
+    }
+
+    .empty {
+      min-height: 278px;
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      padding: 29px 20px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+    }
+
+    #library-status { min-height: 100px; }
+    #library-retry { margin-top: 10px; }
+
+    .empty h3 { font-size: 18px; font-weight: 650; letter-spacing: -.02em; }
+    .empty p { margin-top: 4px; color: var(--muted); font-size: 14px; }
+
+    .case-stack {
+      position: relative;
+      width: 88px;
+      height: 61px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #647895;
+      color: #a2b7d8;
+    }
+
+    .case-stack span {
+      position: absolute;
+      bottom: 0;
+      width: 16px;
+      height: 44px;
+      border: 1px solid currentColor;
+      border-radius: 2px;
+      background:
+        linear-gradient(currentColor, currentColor) center 8px / 7px 1px no-repeat,
+        linear-gradient(currentColor, currentColor) center 11px / 7px 1px no-repeat,
+        #29384e;
+    }
+
+    .case-stack span:nth-child(1) { left: 14px; height: 37px; color: #7589a7; }
+    .case-stack span:nth-child(2) { left: 33px; }
+    .case-stack span:nth-child(3) {
+      left: 54px;
+      height: 40px;
+      color: #879dbc;
+      transform: rotate(-13deg);
+      transform-origin: bottom right;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .game {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+    }
+
+    .cover {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 460 / 215;
+      overflow: hidden;
+      padding: 16px;
+      background: repeating-linear-gradient(135deg, #304158 0 1px, #28364a 1px 10px);
+      color: #dce8fc;
+      text-align: center;
+    }
+
+    .cover span {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow-wrap: anywhere;
+      font-size: 20px;
+      font-weight: 650;
+      line-height: 1.2;
+      letter-spacing: -.025em;
+    }
+
+    .cover img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+    }
+
+    .cover img.loaded { opacity: 1; }
+    .game-body { display: flex; flex: 1; flex-direction: column; padding: 15px; }
+    .game-genre, .game-studio { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+    .game-name { margin-block: 4px 2px; font-size: 19px; line-height: 1.25; overflow-wrap: anywhere; }
+    .game-description {
+      display: -webkit-box;
+      margin-top: 10px;
+      overflow: hidden;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow-wrap: anywhere;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .game-bottom { margin-top: auto; padding-top: 16px; }
+    .game-price { margin-bottom: 12px; color: var(--accent); font-size: 16px; font-weight: 650; }
+    .game-actions { display: flex; gap: 5px; padding-top: 11px; border-top: 1px solid var(--line); }
+    .game-actions .button { min-height: 36px; padding-inline: 10px; }
+
+    .site-footer {
+      padding-block: 17px 21px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    dialog {
+      width: min(520px, calc(100% - 32px));
+      max-height: calc(100% - 32px);
+      padding: 23px;
+      overflow: auto;
+      border: 1px solid var(--field-line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    dialog::backdrop { background: #0e131dc4; }
+    .modal-heading { margin-bottom: 16px; }
+
+    .icon-button {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    form label {
+      display: grid;
+      gap: 5px;
+      margin-bottom: 13px;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .optional { color: var(--muted); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    #form-error { margin-top: 12px; color: var(--danger); font-size: 14px; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 17px; }
+
+    #notice {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 1;
+      max-width: calc(100% - 40px);
+      padding: 11px 15px;
+      border: 1px solid var(--field-line);
+      border-radius: 5px;
+      background: #293648;
+      color: var(--text);
+      box-shadow: 0 6px 20px #0004;
+    }
+
+
+    @media (max-width: 1100px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 780px) {
+      .shell { width: calc(100% - 36px); }
+      .workspace { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+      .filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+      .game-links { max-height: 110px; }
+    }
+
+    @media (max-width: 620px) {
+      .header-inner { min-height: 54px; }
+      .wordmark { min-height: 53px; }
+      .profile { bottom: 14px; padding: 10px 14px 10px 10px; }
+      main { padding-block: 14px 36px; }
+      .page-heading { align-items: flex-start; flex-direction: column; gap: 14px; }
+      .workspace { margin-top: 20px; }
+      .empty { min-height: 206px; }
+    }
+
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 375px) {
+      .filters { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    @media (max-width: 360px) {
+      dialog { padding: 17px; }
+      .form-row { grid-template-columns: 1fr; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <span class="wordmark"><span class="wordmark-mark" aria-hidden="true"></span>Steam Library</span>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="profile-banner">
+      <video autoplay muted playsinline loop poster="perfil-fundo.jpg" aria-hidden="true">
+        <source src="perfil-fundo.webm" type="video/webm">
+        <source src="perfil-fundo.mp4" type="video/mp4">
+      </video>
+      <div class="profile">
+        <img class="profile-avatar" src="avatar-python.png" width="112" height="112" alt="">
+        <div>
+          <span class="profile-name">pythoN</span>
+          <p class="profile-level">Nível <strong>12</strong></p>
+        </div>
+      </div>
+    </div>
+    <div class="page-heading">
+      <h1>Minha biblioteca</h1>
+      <button class="button primary" type="button" data-open disabled>
+        <span class="plus" aria-hidden="true"></span> Cadastrar jogo
+      </button>
+    </div>
+
+    <div class="workspace">
+      <aside class="library-sidebar" aria-labelledby="library-title">
+        <div class="section-heading">
+          <h2 id="library-title">Meus jogos</h2>
+          <span id="total">0</span>
+        </div>
+        <div class="filters">
+          <div class="search-field">
+            <input id="search" type="search" placeholder="Buscar jogo" aria-label="Buscar por jogo ou desenvolvedora">
+          </div>
+          <select id="filter" aria-label="Filtrar por gênero">
+            <option value="">Todos os gêneros</option>
+          </select>
+        </div>
+        <nav class="game-links" id="game-links" aria-label="Jogos da coleção" hidden></nav>
+      </aside>
+
+      <section id="biblioteca" aria-label="Coleção">
+        <div class="collection-toolbar">
+          <dl class="stats">
+            <div><dt>Gratuitos</dt><dd id="free">0</dd></div>
+            <div><dt>Valor da coleção</dt><dd id="value">R$ 0,00</dd></div>
+          </dl>
+          <select id="sort" aria-label="Ordenar jogos">
+            <option value="recent">Mais recentes</option>
+            <option value="name">Nome A–Z</option>
+            <option value="price">Menor preço</option>
+          </select>
+        </div>
+        <p id="count" aria-live="polite"></p>
+
+        <div class="grid" id="games" hidden></div>
+        <p class="empty" id="library-status" role="status" hidden></p>
+        <button class="button secondary" id="library-retry" type="button" hidden>Tentar novamente</button>
+        <div class="empty" id="empty" hidden>
+          <div class="case-stack" aria-hidden="true"><span></span><span></span><span></span></div>
+          <h3 id="empty-title">Sua biblioteca está vazia</h3>
+          <p id="empty-description">Cadastre um jogo para começar sua coleção.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell">Projeto acadêmico independente, sem vínculo com a Valve.</div>
+  </footer>
+
+  <dialog id="modal" aria-labelledby="modalTitle">
+    <div class="modal-heading">
+      <h2 id="modalTitle">Cadastrar jogo</h2>
+      <button class="icon-button" type="button" aria-label="Fechar" data-close>×</button>
+    </div>
+    <form id="gameForm">
+      <label>
+        Nome do jogo
+        <input name="name" required maxlength="100" placeholder="Ex.: Portal 2" autofocus>
+      </label>
+      <div class="form-row">
+        <label>
+          Gênero
+          <select name="genre" id="genre" required></select>
+        </label>
+        <label>
+          Preço (R$)
+          <input name="price" type="number" min="0" max="999999" step="0.01" required placeholder="0,00">
+        </label>
+      </div>
+      <label>
+        Desenvolvedora
+        <input name="studio" required maxlength="100" placeholder="Ex.: Valve">
+      </label>
+      <label>
+        <span>URL da capa <span class="optional">(opcional)</span></span>
+        <input name="image" type="url" maxlength="2048" placeholder="https://…">
+      </label>
+      <label>
+        Descrição
+        <textarea name="desc" maxlength="500" placeholder="Uma breve descrição do jogo"></textarea>
+      </label>
+      <p id="form-error" role="alert" hidden></p>
+      <div class="form-actions">
+        <button class="button secondary" type="button" data-close>Cancelar</button>
+        <button class="button primary" type="submit">Salvar jogo</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="notice" role="status" hidden></div>
+
+  <template id="game-card">
+    <article class="game" tabindex="-1">
+      <div class="cover" aria-hidden="true">
+        <span></span>
+        <img alt="" loading="lazy">
+      </div>
+      <div class="game-body">
+        <p class="game-genre"></p>
+        <h3 class="game-name"></h3>
+        <p class="game-studio"></p>
+        <p class="game-description"></p>
+        <div class="game-bottom">
+          <p class="game-price"></p>
+          <div class="game-actions">
+            <button class="button secondary" type="button" data-edit>Editar</button>
+            <button class="button danger" type="button" data-delete>Excluir</button>
+          </div>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script>
+    const genres = ['Ação', 'Aventura', 'RPG', 'Estratégia', 'Simulação', 'Corrida', 'Esportes', 'Terror', 'Indie', 'Puzzle', 'Outros'];
+    const storageKey = 'steam-library-python-v1';
+    const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    const isWebUrl = value => /^https?:\/\//i.test(value);
+    const $ = id => document.getElementById(id);
+    const modal = $('modal');
+    const form = $('gameForm');
+    const formError = $('form-error');
+    const grid = $('games');
+    const search = $('search');
+    const filter = $('filter');
+    const sort = $('sort');
+
+    const addButton = document.querySelector('[data-open]');
+    const submitButton = form.querySelector('[type="submit"]');
+    const localMode = location.protocol === 'file:';
+    const endpoint = '/api/jogos';
+    let games = [];
+    let editing = null;
+    let saving = false;
+    let noticeTimer;
+
+    for (const genre of genres) {
+      $('genre').add(new Option(genre, genre));
+      filter.add(new Option(genre, genre));
+    }
+
+    function notify(message) {
+      const notice = $('notice');
+      notice.hidden = false;
+      notice.textContent = message;
+      clearTimeout(noticeTimer);
+      noticeTimer = setTimeout(() => { notice.hidden = true; }, 3000);
+    }
+
+    function saveLocally(nextGames) {
+      localStorage.setItem(storageKey, JSON.stringify(nextGames));
+      games = nextGames;
+    }
+
+    async function request(path = '', options) {
+      const response = await fetch(endpoint + path, options);
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.status === 204 ? null : response.json();
+    }
+
+    function fromServer(record) {
+      return {
+        id: String(record.id),
+        name: record.nome ?? '',
+        studio: record.criador ?? '',
+        genre: record.genero ?? '',
+        price: record.preco ?? null,
+        desc: record.descricao ?? '',
+        image: record.capa ?? ''
+      };
+    }
+
+    function addExistingGenres() {
+      for (const { genre } of games) {
+        if (genre && !Array.from(filter.options).some(option => option.value === genre)) {
+          $('genre').add(new Option(genre, genre));
+          filter.add(new Option(genre, genre));
+        }
+      }
+    }
+
+    async function loadLibrary() {
+      const status = $('library-status');
+      const retry = $('library-retry');
+      if (localMode) {
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey));
+          if (Array.isArray(saved)) games = saved;
+        } catch {
+          // A blocked or empty browser store can still display the library.
+        }
+      } else {
+        addButton.disabled = true;
+        retry.hidden = true;
+        status.textContent = 'Carregando biblioteca…';
+        status.hidden = false;
+        try {
+          const records = await request('', { cache: 'no-store' });
+          games = records.map(fromServer);
+        } catch {
+          status.textContent = 'Não foi possível carregar a biblioteca do banco.';
+          retry.hidden = false;
+          return;
+        }
+      }
+      addExistingGenres();
+      status.hidden = true;
+      addButton.disabled = false;
+      render();
+    }
+
+    async function saveGame(data, current) {
+      let entry;
+      if (localMode) {
+        const id = current?.id ?? (globalThis.crypto?.randomUUID?.() ?? String(Date.now()));
+        entry = { ...data, id };
+      } else {
+        const body = {
+          nome: data.name, criador: data.studio, genero: data.genre,
+          preco: data.price, capa: data.image, descricao: data.desc
+        };
+        if (!current) body.disponivel = true;
+        entry = fromServer(await request(current ? '/' + encodeURIComponent(current.id) : '', {
+          method: current ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        }));
+      }
+      const nextGames = current ? games.map(game => game.id === current.id ? entry : game) : [entry, ...games];
+      if (localMode) saveLocally(nextGames);
+      else games = nextGames;
+    }
+
+    async function deleteGame(game) {
+      const nextGames = games.filter(item => item.id !== game.id);
+      if (localMode) saveLocally(nextGames);
+      else {
+        await request('/' + encodeURIComponent(game.id), { method: 'DELETE' });
+        games = nextGames;
+      }
+    }
+
+    function createCard(game) {
+      const card = $('game-card').content.cloneNode(true);
+      card.querySelector('.game-name').textContent = game.name;
+      card.querySelector('.game-genre').textContent = game.genre;
+      card.querySelector('.game-studio').textContent = game.studio;
+      card.querySelector('.game-description').textContent = game.desc || 'Sem descrição.';
+      card.querySelector('.game-price').textContent = game.price == null ? 'Preço não cadastrado' : Number(game.price) === 0 ? 'Gratuito' : currency.format(game.price);
+      card.querySelector('.cover span').textContent = game.name;
+
+      if (isWebUrl(game.image)) {
+        const image = card.querySelector('img');
+        image.addEventListener('load', () => { image.classList.add('loaded'); }, { once: true });
+        image.src = game.image;
+      }
+
+      const edit = card.querySelector('[data-edit]');
+      edit.dataset.edit = game.id;
+      edit.setAttribute('aria-label', 'Editar ' + game.name);
+
+      const remove = card.querySelector('[data-delete]');
+      remove.dataset.delete = game.id;
+      remove.setAttribute('aria-label', 'Excluir ' + game.name);
+      return card;
+    }
+
+    function render() {
+      if (addButton.disabled) return;
+      const query = search.value.trim().toLowerCase();
+      const selectedGenre = filter.value;
+      const collection = games.filter(game => !/^\s*awp[\s|–—-]+mortis\s*$/i.test(game.name));
+      const matches = collection.filter(game => {
+        const searchable = (game.name + ' ' + game.studio).toLowerCase();
+        return searchable.includes(query) && (!selectedGenre || game.genre === selectedGenre);
+      });
+
+      if (sort.value === 'name') matches.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+      if (sort.value === 'price') matches.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+
+      $('total').textContent = collection.length;
+      $('free').textContent = collection.filter(game => game.price != null && Number(game.price) === 0).length;
+      $('value').textContent = currency.format(collection.reduce((total, game) => total + Number(game.price), 0));
+      $('count').textContent = query || selectedGenre
+        ? matches.length + (matches.length === 1 ? ' resultado' : ' resultados')
+        : '';
+
+      const cards = document.createDocumentFragment();
+      const links = document.createDocumentFragment();
+      for (const [index, game] of matches.entries()) {
+        const card = createCard(game);
+        const cardId = 'jogo-' + (index + 1);
+        card.firstElementChild.id = cardId;
+        cards.append(card);
+
+        const link = document.createElement('a');
+        link.href = '#' + cardId;
+        link.textContent = game.name;
+        link.dataset.libraryGame = '';
+        links.append(link);
+      }
+      grid.replaceChildren(cards);
+      const gameLinks = $('game-links');
+      gameLinks.replaceChildren(links);
+      gameLinks.hidden = matches.length === 0;
+      grid.hidden = matches.length === 0;
+
+      $('empty').hidden = matches.length > 0;
+      $('empty-title').textContent = collection.length ? 'Nenhum jogo encontrado' : 'Sua biblioteca está vazia';
+      $('empty-description').textContent = collection.length
+        ? 'Tente outro termo ou altere o gênero.'
+        : 'Cadastre um jogo para começar sua coleção.';
+    }
+
+    function openForm(game = null) {
+      editing = game;
+      form.reset();
+      formError.hidden = true;
+      $('modalTitle').textContent = game ? 'Editar jogo' : 'Cadastrar jogo';
+
+      if (game) {
+        for (const field of ['name', 'genre', 'price', 'studio', 'image', 'desc']) {
+          form.elements[field].value = game[field] ?? '';
+        }
+      }
+
+      modal.showModal();
+    }
+
+    function showFormError(message) {
+      formError.hidden = false;
+      formError.textContent = message;
+    }
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (saving) return;
+      formError.hidden = true;
+      const data = Object.fromEntries(new FormData(form));
+      data.name = data.name.trim();
+      data.studio = data.studio.trim();
+      data.price = Number(data.price);
+
+      if (!data.name || !data.studio) {
+        showFormError('Preencha o nome e a desenvolvedora.');
+        return;
+      }
+      if (data.image && !isWebUrl(data.image)) {
+        showFormError('Use uma URL HTTP ou HTTPS para a capa.');
+        return;
+      }
+
+      saving = true;
+      submitButton.disabled = true;
+      try {
+        await saveGame(data, editing);
+        modal.close();
+        render();
+        notify(editing ? 'Jogo atualizado.' : 'Jogo cadastrado.');
+      } catch {
+        showFormError('Não foi possível salvar o jogo. Tente novamente.');
+      } finally {
+        saving = false;
+        submitButton.disabled = false;
+      }
+    });
+
+    grid.addEventListener('click', async event => {
+      const button = event.target.closest('[data-edit], [data-delete]');
+      if (!button || saving) return;
+
+      const id = button.dataset.edit ?? button.dataset.delete;
+      const game = games.find(item => String(item.id) === id);
+      if (!game) return;
+
+      if (button.hasAttribute('data-edit')) {
+        openForm(game);
+        return;
+      }
+
+      if (!confirm('Excluir ' + game.name + ' da biblioteca?')) return;
+      saving = true;
+      button.disabled = true;
+      try {
+        await deleteGame(game);
+        render();
+        notify('Jogo excluído.');
+      } catch {
+        notify('Não foi possível excluir o jogo. Tente novamente.');
+        button.disabled = false;
+      } finally {
+        saving = false;
+      }
+    });
+
+    addButton.addEventListener('click', () => { if (!saving) openForm(); });
+    for (const button of modal.querySelectorAll('[data-close]')) {
+      button.addEventListener('click', () => { if (!saving) modal.close(); });
+    }
+    modal.addEventListener('cancel', event => { if (saving) event.preventDefault(); });
+    $('library-retry').addEventListener('click', loadLibrary);
+    search.addEventListener('input', render);
+    filter.addEventListener('change', render);
+    sort.addEventListener('change', render);
+    loadLibrary();
+  </script>
+</body>
+</html>

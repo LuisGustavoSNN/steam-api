@@ -1,0 +1,5 @@
+com\dest1\steam\entities\Jogo.class
+com\dest1\steam\SteamApplication.class
+com\dest1\steam\controllers\JogoController$DadosJogo.class
+com\dest1\steam\controllers\JogoController.class
+com\dest1\steam\repositories\JogoRepository.class
